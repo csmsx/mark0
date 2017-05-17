@@ -11,6 +11,8 @@ import uuid
 
 import RPi.GPIO as GPIO
 from picamera import PiCamera
+import pytz
+from pytz import timezone
 
 import lib.ext.dht11 as dht11
 
@@ -33,7 +35,11 @@ GPIO.cleanup()
 
 
 def snapshot():
-    name = str(uuid.uuid4()) + '.jpg'
+    name = '.'.join([
+        datetime.datetime.now().strftime('%Y%m%d%H%M%S'),
+        str(uuid.uuid4()),
+        'jpg'
+    ])
     path = os.path.sep.join([WORK_DIR, name])
     camera = PiCamera()
     camera.start_preview()
@@ -46,19 +52,27 @@ def snapshot():
 def cmd_leds(turn_red_on = True, turn_blue_on = True):
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     server_address = config.SERVER_ADDRESS
+    result = {}
     try:
         sock.connect(server_address)
         try:
             message = json.dumps({ 'red': turn_red_on, 'blue': turn_blue_on })
             print("Send to socket: %s" % message)
             sock.sendall(message)
+
+            # TODO Get confirmation from daemon
             #amount_received = 0
             #amount_expected = len(message)
             #while amount_received < amount_expected:
             #    data = sock.recv(16)
             #    amount_received += len(data)
+            # result['red'] = ...
+            # result['blue'] = ...
+            result['red'] = turn_red_on
+            result['blue'] = turn_blue_on
         finally:
             sock.close()
+        return result
     except socket.error:
         print("Could not UDS communicate with LED daemon.")
 
@@ -108,17 +122,30 @@ def run():
     # 2) Send snapshot to Cx Images, unique name
     # 3) Send status data to Cx API.
 
+    # Decide
+    z = timezone('Asia/Tokyo')
+    local_time = z.localize(datetime.datetime.now()).time()
+    night_start = datetime.time(21)
+    night_end = datetime.time(4)
+    if local_time > night_start and local_time < night_end:
+        turn_on_leds = True
+    else:
+        turn_on_leds = False
+
     img_name, full_path = snapshot()
-    leds = cmd_leds()
+    leds = cmd_leds(turn_blue_on=turn_on_leds, turn_red_on=turn_on_leds)
     sensors = sensor_harvest()
     post({
-      'snapshot': img_name,
       'ts': datetime.datetime.now().isoformat(),
+      'snapshot': img_name,
       'status': {
         'leds': leds,
         'sensors': sensors,
       }
     })
+    if os.path.exists(full_path):
+        os.remove(full_path)
+
 
 if __name__ == '__main__':
     run()
