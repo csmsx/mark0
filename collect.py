@@ -5,13 +5,16 @@ from distutils.dir_util import mkpath
 import json
 import os
 import time
+import socket
+import sys
 import uuid
 
 import RPi.GPIO as GPIO
-from gpiozero import LED
 from picamera import PiCamera
 
 import lib.ext.dht11 as dht11
+
+import lib.collect.config as config
 
 WORK_DIR = '/tmp/cosmosx/mark0'
 mkpath(WORK_DIR)
@@ -21,14 +24,12 @@ API_VERSION = 0
 
 CLIENT_MODEL = 'mark0'
 CLIENT_VERSION = 0
-BLUE_LED_PIN = 18
-RED_LED_PIN = 17
 DHT_PIN = 15
 
 
-#GPIO.setwarnings(False)
-#GPIO.setmode(GPIO.BCM)
-#GPIO.cleanup()
+GPIO.setwarnings(False)
+GPIO.setmode(GPIO.BCM)
+GPIO.cleanup()
 
 
 def snapshot():
@@ -42,19 +43,24 @@ def snapshot():
     return name, path
 
 
-def toggle_leds():
-    red = LED(RED_LED_PIN)
-    blue = LED(BLUE_LED_PIN)
-    status = {}
+def cmd_leds(turn_red_on = True, turn_blue_on = True):
+    sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    server_address = config.SERVER_ADDRESS
     try:
-        red.toggle()
-        blue.toggle()
-        status['red'] = red.is_lit
-        status['blue'] = blue.is_lit
-    finally:
-        red.close()
-        blue.close()
-    return status
+        sock.connect(server_address)
+        try:
+            message = json.dumps({ 'red': turn_red_on, 'blue': turn_blue_on })
+            print("Send to socket: %s" % message)
+            sock.sendall(message)
+            #amount_received = 0
+            #amount_expected = len(message)
+            #while amount_received < amount_expected:
+            #    data = sock.recv(16)
+            #    amount_received += len(data)
+        finally:
+            sock.close()
+    except socket.error:
+        print("Could not UDS communicate with LED daemon.")
 
 
 def sensor_harvest():
@@ -103,7 +109,7 @@ def run():
     # 3) Send status data to Cx API.
 
     img_name, full_path = snapshot()
-    leds = toggle_leds()
+    leds = cmd_leds()
     sensors = sensor_harvest()
     post({
       'snapshot': img_name,

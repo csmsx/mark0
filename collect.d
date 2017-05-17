@@ -9,15 +9,15 @@ import os
 import daemon
 from gpiozero import LED
 
-WORK_DIR = '/tmp/cosmosx/mark0/collect.d'
-mkpath(WORK_DIR)
+import lib.collect.config as config
+
+WORK_DIR = config.COLLECT_D_WORK_DIR
 OUT_LOG=os.path.sep.join([WORK_DIR, 'out.log'])
 ERR_LOG=os.path.sep.join([WORK_DIR, 'err.log'])
 
-SERVER_ADDRESS = os.path.sep.join([WORK_DIR, 'collect_d_socket'])
-
 BLUE_LED_PIN = 18
 RED_LED_PIN = 17
+
 
 def red(turn_on = True):
     red = LED(RED_LED_PIN)
@@ -32,7 +32,7 @@ def red(turn_on = True):
 
 def run():
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    sock.bind(SERVER_ADDRESS)
+    sock.bind(config.SERVER_ADDRESS)
     sock.listen(1)
     while True:
         conn, _ = sock.accept()
@@ -61,8 +61,8 @@ with open(OUT_LOG, 'w+') as out_f:
                                      stderr=err_f
                                  ):
             try:
-                os.unlink(SERVER_ADDRESS)
+                os.unlink(config.SERVER_ADDRESS)
             except OSError:
-                if os.path.exists(SERVER_ADDRESS):
+                if os.path.exists(config.SERVER_ADDRESS):
                     raise
             run()
