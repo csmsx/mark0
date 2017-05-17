@@ -22,6 +22,8 @@ WORK_DIR = '/tmp/cosmosx/mark0'
 mkpath(WORK_DIR)
 MEMO_FILE = os.path.sep.join([WORK_DIR, 'last'])
 
+COLLECT_API_LOG = os.path.sep.join([WORK_DIR, 'collect_api_log.json'])
+
 API_VERSION = 0
 
 CLIENT_MODEL = 'mark0'
@@ -98,8 +100,24 @@ def backup(img_file):
 def post(data):
     data['client'] = { 'm': CLIENT_MODEL, 'v': CLIENT_VERSION }
     data['api'] = API_VERSION
-    payload = json.dumps(data)
-    print(payload)
+
+    original = []
+
+    # TODO Temporary time to get the server up.
+    if os.path.exists(COLLECT_API_LOG):
+        with open(COLLECT_API_LOG, 'r') as f:
+            payload = f.read()
+            try:
+                original = json.loads(payload)
+            except ValueError:
+                print("Could not parse %s, overwriting." % COLLECT_API_LOG)
+                original = []
+
+    original.append(data)
+    to_save = json.dumps(original)
+    with open(COLLECT_API_LOG, 'w') as f:
+        f.write(to_save)
+
     # TODO
 
 
