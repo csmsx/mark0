@@ -112,7 +112,7 @@ def run():
         'leds': leds,
         'sensors': sensors,
       }
-    }
+    })
 
 if __name__ == '__main__':
     run()
