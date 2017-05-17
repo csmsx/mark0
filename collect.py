@@ -11,7 +11,7 @@ import RPi.GPIO as GPIO
 from gpiozero import LED
 from picamera import PiCamera
 
-import lib.ext.dht11
+import lib.ext.dht11 as dht11
 
 WORK_DIR = '/tmp/cosmosx/mark0'
 mkpath(WORK_DIR)
