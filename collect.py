@@ -142,10 +142,10 @@ def run():
 
     # Decide
     z = timezone('Asia/Tokyo')
-    local_time = z.localize(datetime.datetime.now()).time()
+    local_time = datetime.datetime.now(z).time()
     night_start = datetime.time(21)
     night_end = datetime.time(4)
-    if local_time > night_start and local_time < night_end:
+    if local_time > night_start or local_time < night_end:
         turn_on_leds = True
     else:
         turn_on_leds = False
