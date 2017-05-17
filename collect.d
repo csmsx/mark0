@@ -24,6 +24,13 @@ def log(msg):
     sys.stdout.flush()
 
 
+def __apply_led(led, turn_on):
+    if turn_on:
+        led.on()
+    else:
+        led.off()
+
+
 def run(leds):
     log("collect.d starting...")
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
@@ -44,11 +51,8 @@ def run(leds):
             try:
                 log("collect.d received: %s" % payload)
                 request = json.loads(payload)
-                log("collect.d parsed: %s" % str(payload))
-                if request['red']:
-                    leds['red'].on()
-                else:
-                    leds['red'].off()
+                __apply_led(leds['red'], request['red'])
+                __apply_led(leds['blue'], request['blue'])
             except ValueError:
                 log("Failed to parse payload: %s" % payload)
         finally:
