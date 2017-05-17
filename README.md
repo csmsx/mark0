@@ -9,6 +9,26 @@ Requirements
 * LEDs
 * DHT11
 
+Usage
+-----
+
+Mark 0 relies on a daemon and a collection program. Usages assumes two steps:
+
+1. Launch the daemon.
+2. Run the program, or register it for periodic execution (e.g. with `cron`).
+
+The following procedure is based on `cron` to run every hour. All programs run as the default `pi` user. The environment variable `WORK_DIR` is set to the repository path.
+
+    $ cd $WORK_DIR
+    $ sudo pip install -r requirements.txt
+    $ ./led.d
+    $ crontab -e
+    # Add entry:
+    # 0 * * * * /usr/bin/python /path/to/collect.py
+
+In the `crontab`, please edit the path to the `collect.py` script.
+
+
 Copyright
 ---------
 
