@@ -19,9 +19,15 @@ BLUE_LED_PIN = 18
 RED_LED_PIN = 17
 
 
+def log(msg):
+    sys.stdout.write(msg + '\n')
+    sys.stdout.flush()
+
+
 def red(turn_on = True):
     red = LED(RED_LED_PIN)
     try:
+        log(turn_on)
         if turn_on:
             red.on()
         else:
@@ -31,11 +37,14 @@ def red(turn_on = True):
 
 
 def run():
+    log("collect.d starting...")
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     sock.bind(config.SERVER_ADDRESS)
     sock.listen(1)
+    log("collect.d listening at %s" % config.SERVER_ADDRESS)
     while True:
         conn, _ = sock.accept()
+        log("collect.d got message")
         try:
             payload = ''
             while True:
@@ -45,12 +54,16 @@ def run():
                 else:
                     break
             try:
-              request = json.loads(payload)
-              red(request['red'])
+                log("collect.d received: %s" % payload)
+                request = json.loads(payload)
+                log("collect.d parsed: %s" % str(payload))
+                red(request['red'])
             except ValueError:
-                print("Failed to parse payload: %s" % payload)
+                log("Failed to parse payload: %s" % payload)
         finally:
             conn.close()
+    log("collect.d stopped listening at %s" % config.SERVER_ADDRESS)
+    log("collect.d stopped")
 
 
 with open(OUT_LOG, 'w+') as out_f:
