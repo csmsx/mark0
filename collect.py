@@ -161,8 +161,8 @@ def run():
         'sensors': sensors,
       }
     })
-    if os.path.exists(full_path):
-        os.remove(full_path)
+    #if os.path.exists(full_path):
+    #    os.remove(full_path)
 
 
 if __name__ == '__main__':
