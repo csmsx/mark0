@@ -29,10 +29,10 @@ The following procedure is based on `cron` to run every hour. All programs run a
 In the `crontab`, please edit the path to the `collect.py` script.
 
 
-Copyright
----------
+Copyrights & Thanks
+-------------------
 
 This work relies on external libraries:
 
-* `lib/ext/dht11.py`: DHT11 Python library, copyright (c) 2016 Zoltan Szarvas (MIT License)
-* `python-daemon`: PIP library, copyright Ben Finney, unclear if the parts used are Apache 2.0 or GPLv3. If GPLv3, I will drop for another implementation.
+* `lib/ext/dht11.py`: [DHT11 Python library](https://github.com/szazo/DHT11_Python), copyright (c) 2016 Zoltan Szarvas (MIT License)
+* `python-daemon`: [PIP library](https://pypi.python.org/pypi/python-daemon/), copyright Ben Finney, unclear if the parts used are Apache 2.0 or GPLv3. If GPLv3, I will drop for another implementation.
