@@ -18,7 +18,7 @@ import lib.ext.dht11 as dht11
 
 import lib.collect.config as config
 
-WORK_DIR = '/tmp/cosmosx/mark0'
+WORK_DIR = '/tmp/mark0'
 mkpath(WORK_DIR)
 MEMO_FILE = os.path.sep.join([WORK_DIR, 'last'])
 
