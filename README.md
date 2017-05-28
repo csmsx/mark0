@@ -21,7 +21,7 @@ The following procedure is based on `cron` to run every hour. All programs run a
 
     $ cd $WORK_DIR
     $ sudo pip install -r requirements.txt
-    $ ./led.d
+    $ ./leds.d
     $ crontab -e
     # Add entry:
     # 0 * * * * /usr/bin/python /path/to/collect.py
