@@ -18,9 +18,8 @@ import lib.ext.dht11 as dht11
 
 import lib.collect.config as config
 
-WORK_DIR = '/tmp/mark0'
+WORK_DIR = '~/mark0/data'
 mkpath(WORK_DIR)
-MEMO_FILE = os.path.sep.join([WORK_DIR, 'last'])
 
 COLLECT_API_LOG = os.path.sep.join([WORK_DIR, 'collect_api_log.json'])
 
@@ -122,20 +121,6 @@ def post(data):
 
 
 def run():
-    '''
-    memo = {
-      'ts': Timestamp of the last operation
-      'leds': Supposed state of the LEDS: {
-        'blue': { state: True/False, until: xyz }
-        'red':  { state: True/False, until: xyz }
-      }
-    }
-    '''
-    memo = {}
-    if os.path.isfile(MEMO_FILE):
-        with open(MEMO_FILE, 'r') as f:
-            memo = json.loads(f.read())
-
     # 1) Take snapshot
     # 2) Send snapshot to Cx Images, unique name
     # 3) Send status data to Cx API.
