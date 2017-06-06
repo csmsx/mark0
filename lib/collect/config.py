@@ -1,6 +1,6 @@
 from distutils.dir_util import mkpath
 import os
 
-COLLECT_D_WORK_DIR = '/tmp/mark0/collect.d'
-mkpath(COLLECT_D_WORK_DIR)
-SERVER_ADDRESS = os.path.sep.join([COLLECT_D_WORK_DIR, 'collect_d_socket'])
+LEDS_D_RUN_DIR = '/var/log/mark0/leds.d'
+mkpath(LEDS_D_RUN_DIR)
+SERVER_ADDRESS = os.path.sep.join([LEDS_D_RUN_DIR, 'leds_d_socket'])

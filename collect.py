@@ -52,7 +52,7 @@ def snapshot():
 
 def cmd_leds(turn_red_on = True, turn_blue_on = True):
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    server_address = config.SERVER_ADDRESS
+    server_address = config.LEDS_D_ADDRESS
     result = {}
     try:
         sock.connect(server_address)
