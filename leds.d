@@ -11,9 +11,12 @@ from gpiozero import LED
 
 import lib.collect.config as config
 
-WORK_DIR = config.COLLECT_D_WORK_DIR
-OUT_LOG=os.path.sep.join([WORK_DIR, 'out.log'])
-ERR_LOG=os.path.sep.join([WORK_DIR, 'err.log'])
+RUN_DIR = config.LEDS_D_RUN_DIR
+
+LOG_DIR = '/var/log/mark0/leds.d'
+mkpath(LOG_DIR)
+OUT_LOG=os.path.sep.join([LOG_DIR, 'out.log'])
+ERR_LOG=os.path.sep.join([LOG_DIR, 'err.log'])
 
 BLUE_LED_PIN = 18
 RED_LED_PIN = 17
@@ -32,14 +35,14 @@ def __apply_led(led, turn_on):
 
 
 def run(leds):
-    log("collect.d starting...")
+    log("leds.d starting...")
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    sock.bind(config.SERVER_ADDRESS)
+    sock.bind(config.LEDS_D_ADDRESS)
     sock.listen(1)
-    log("collect.d listening at %s" % config.SERVER_ADDRESS)
+    log("leds.d listening at %s" % config.LEDS_D_ADDRESS)
     while True:
         conn, _ = sock.accept()
-        log("collect.d got message")
+        log("leds.d got message")
         try:
             payload = ''
             while True:
@@ -49,7 +52,7 @@ def run(leds):
                 else:
                     break
             try:
-                log("collect.d received: %s" % payload)
+                log("leds.d received: %s" % payload)
                 request = json.loads(payload)
                 __apply_led(leds['red'], request['red'])
                 __apply_led(leds['blue'], request['blue'])
@@ -57,21 +60,21 @@ def run(leds):
                 log("Failed to parse payload: %s" % payload)
         finally:
             conn.close()
-    log("collect.d stopped listening at %s" % config.SERVER_ADDRESS)
+    log("leds.d stopped listening at %s" % config.LEDS_D_ADDRESS)
     log("collect.d stopped")
 
 
 with open(OUT_LOG, 'w+') as out_f:
     with open(ERR_LOG, 'w+') as err_f:
         with daemon.DaemonContext(
-                                     working_directory=WORK_DIR,
+                                     working_directory=RUN_DIR,
                                      stdout=out_f,
                                      stderr=err_f
                                  ):
             try:
-                os.unlink(config.SERVER_ADDRESS)
+                os.unlink(config.LEDS_D_ADDRESS)
             except OSError:
-                if os.path.exists(config.SERVER_ADDRESS):
+                if os.path.exists(config.LEDS_D_ADDRESS):
                     raise
             leds = {
                 'red': LED(RED_LED_PIN),
