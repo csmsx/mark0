@@ -18,7 +18,7 @@ import lib.ext.dht11 as dht11
 
 import lib.collect.config as config
 
-WORK_DIR = '~/mark0/data'
+WORK_DIR = os.path.expanduser('~/mark0/data')
 mkpath(WORK_DIR)
 
 COLLECT_API_LOG = os.path.sep.join([WORK_DIR, 'collect_api_log.json'])
