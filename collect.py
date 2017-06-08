@@ -92,7 +92,7 @@ def sensor_harvest():
 
 
 def backup(img_file):
-    pass
+    backend.api.backups([img_file])
 
 
 def post(data):
@@ -128,8 +128,9 @@ def run():
         'sensors': sensors,
       }
     })
-    #if os.path.exists(full_path):
-    #    os.remove(full_path)
+    backup(full_path)
+    if os.path.exists(full_path):
+        os.remove(full_path)
 
 
 if __name__ == '__main__':
