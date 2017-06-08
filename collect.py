@@ -17,6 +17,7 @@ from pytz import timezone
 import lib.ext.dht11 as dht11
 
 import lib.collect.config as config
+import lib.collect.backend as backend
 
 WORK_DIR = config.WORK_DIR
 COLLECT_API_LOG = config.COLLECT_API_LOG
@@ -97,25 +98,8 @@ def backup(img_file):
 def post(data):
     data['client'] = { 'm': CLIENT_MODEL, 'v': CLIENT_VERSION }
     data['api'] = API_VERSION
-
-    original = []
-
-    # TODO Temporary time to get the server up.
-    if os.path.exists(COLLECT_API_LOG):
-        with open(COLLECT_API_LOG, 'r') as f:
-            payload = f.read()
-            try:
-                original = json.loads(payload)
-            except ValueError:
-                print("Could not parse %s, overwriting." % COLLECT_API_LOG)
-                original = []
-
-    original.append(data)
-    to_save = json.dumps(original)
-    with open(COLLECT_API_LOG, 'w') as f:
-        f.write(to_save)
-
-    # TODO
+    payload = json.dumps(data)
+    backend.api.record(payload)
 
 
 def run():
