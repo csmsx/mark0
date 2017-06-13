@@ -13,7 +13,9 @@ LEDS_D_RUN_DIR = '/var/log/mark0/leds.d'
 mkpath(LEDS_D_RUN_DIR)
 LEDS_D_ADDRESS = os.path.sep.join([LEDS_D_RUN_DIR, 'leds_d_socket'])
 
+BACKEND = 'aws'
+
 DYNAMODB_TABLE_NAME = 'mark0_observations'
 DYNAMODB_KEY_RESERVED_CHARACTER = '#'
 
-S3_BUCKET = 'mark0'
+S3_BUCKET = 'plant-data-mark0'
