@@ -98,8 +98,7 @@ def backup(img_file):
 def post(data):
     data['client'] = { 'm': CLIENT_MODEL, 'v': CLIENT_VERSION }
     data['api'] = API_VERSION
-    payload = json.dumps(data)
-    backend.api.record(payload)
+    backend.api.record(data)
 
 
 def run():
