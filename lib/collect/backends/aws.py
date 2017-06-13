@@ -71,7 +71,6 @@ def backups(files = [], keys = []):
 
 
 def __valid_hash(payload):
-    # Hash key within 2048 bytes
     '''
     Valid payload:
     - Dictionary with minimum entries as follows:
@@ -99,7 +98,8 @@ def __valid_hash(payload):
             str(client_model),
             str(api),
         ])
-        return hash_key
+        # Hash key within 2048 bytes
+        return hash_key[0:2048]
     except KeyError as e:
         raise errors.BackendInvalidPayloadError(e)
 
