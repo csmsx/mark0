@@ -6,7 +6,8 @@ import lib.collect.backends.errors as errors
 import lib.collect.config as config
 
 
-RESERVED_CHARACTER = '#'
+RESERVED_CHARACTER = config.DYNAMODB_KEY_RESERVED_CHARACTER
+BUCKET = config.S3_BUCKET
 
 
 def setup():
@@ -78,10 +79,10 @@ def __valid_hash(payload):
         state = payload['state']
         ts = payload['ts']
         hash_key = RESERVED_CHARACTER.join([
-            client_id,
-            client_version,
-            client_model,
-            api,
+            str(client_id),
+            str(client_version),
+            str(client_model),
+            str(api),
         ])
         return hash_key
     except KeyError as e:
