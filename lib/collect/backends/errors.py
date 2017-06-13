@@ -7,3 +7,6 @@ class BackendRecordError(Exception):
 
 class BackendBackupError(Exception):
     pass
+
+class BackendInvalidPayloadError(Exception):
+    pass
