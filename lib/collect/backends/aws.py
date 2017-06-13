@@ -2,6 +2,7 @@
 
 import boto3
 
+import lib.collect.backends.errors as errors
 import lib.collect.config as config
 
 
