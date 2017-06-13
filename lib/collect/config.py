@@ -14,3 +14,6 @@ mkpath(LEDS_D_RUN_DIR)
 LEDS_D_ADDRESS = os.path.sep.join([LEDS_D_RUN_DIR, 'leds_d_socket'])
 
 DYNAMODB_TABLE_NAME = 'mark0_observations'
+DYNAMODB_KEY_RESERVED_CHARACTER = '#'
+
+S3_BUCKET = 'mark0'
