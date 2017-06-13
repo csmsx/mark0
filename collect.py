@@ -54,6 +54,7 @@ def snapshot():
     camera.stop_preview()
     payload = {
         'm': CAMERA_MODEL,
+        'u': 'jpg',
         'v': name,
     }
     return payload, path
@@ -80,10 +81,12 @@ def cmd_leds(turn_red_on = True, turn_blue_on = True):
             # result['blue'] = ...
             result['red'] = {
                 'm': LED_MODEL,
+                'u': 'bool',
                 'v': turn_red_on,
             }
             result['blue'] = {
                 'm': LED_MODEL,
+                'u': 'bool',
                 'v': turn_blue_on,
             }
         finally:
@@ -101,10 +104,12 @@ def sensor_harvest():
         return {
             'temperature': {
                 'm': SENSOR_TEMPERATURE_MODEL,
+                'u': 'celsius',
                 'v': result.temperature,
-            }
+            },
             'humidity': {
                 'm': SENSOR_HUMIDITY_MODEL,
+                'u': 'percent',
                 'v': result.humidity,
             }
         }
