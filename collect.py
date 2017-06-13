@@ -55,7 +55,12 @@ def snapshot():
     payload = {
         'm': CAMERA_MODEL,
         'u': 'jpg',
-        'v': name,
+        'v': os.path.sep.join([
+                        str(CLIENT_ID),
+                        str(CLIENT_MODEL),
+                        str(CLIENT_VERSION),
+                        name,
+                     ]),
     }
     return payload, path
 
@@ -118,8 +123,8 @@ def sensor_harvest():
         return {}
 
 
-def backup(img_file):
-    backend.api.backups([img_file])
+def backup(img_file, key):
+    backend.api.backups([img_file], [key])
 
 
 def post(data):
@@ -161,7 +166,7 @@ def run():
       'ts': datetime.datetime.now().isoformat(),
       'state': state
     })
-    backup(full_path)
+    backup(full_path, camera['v'])
     if os.path.exists(full_path):
         os.remove(full_path)
 

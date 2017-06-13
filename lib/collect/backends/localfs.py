@@ -1,3 +1,4 @@
+from distutils.dir_util import mkpath
 import json
 import os
 from shutil import copyfile
@@ -15,12 +16,18 @@ def record(payload):
         raise errors.BackendRecordError(e)
 
 
-def backups(files = []):
+def backups(files = [], keys = []):
     try:
-        for f in files:
-            target = os.path.sep.join([
+        for idx, f in enumerate(files):
+            key = keys[idx]
+            target_dir = os.path.sep.join([
                 config.BACKUP_DIR,
-                os.path.basename(f)
+                os.path.dirname(key),
+            ])
+            mkpath(target_dir)
+            target = os.path.sep.join([
+                target_dir,
+                os.path.basename(key)
             ])
             copyfile(f, target)
     except Exception as e:
