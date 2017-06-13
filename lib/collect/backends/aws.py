@@ -12,21 +12,21 @@ def setup():
         TableName=config.DYNAMODB_TABLE_NAME,
         KeySchema=[
             {
-                'AttributeName': 'ts',
-                'KeyType': 'RANGE'
+                'AttributeName': 'deployment_id',
+                'KeyType': 'HASH'
             },
             {
-                'AttributeName': 'snapshot',
+                'AttributeName': 'ts',
                 'KeyType': 'RANGE'
             }
         ],
         AttributeDefinitions=[
             {
-                'AttributeName': 'ts',
+                'AttributeName': 'deployment_id',
                 'AttributeType': 'S'
             },
             {
-                'AttributeName': 'snapshot',
+                'AttributeName': 'ts',
                 'AttributeType': 'S'
             },
 
