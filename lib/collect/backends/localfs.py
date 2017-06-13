@@ -1,3 +1,4 @@
+import json
 import os
 from shutil import copyfile
 
@@ -7,10 +8,11 @@ import lib.collect.config as config
 
 def record(payload):
     try:
+        pl = json.dumps(payload)
         with open(config.COLLECT_API_LOG, 'a') as f:
-            f.write(payload + "\n")
-    except:
-        raise errors.BackendRecordError(payload)
+            f.write(pl + "\n")
+    except Exception as e:
+        raise errors.BackendRecordError(e)
 
 
 def backups(files = []):
@@ -21,5 +23,5 @@ def backups(files = []):
                 os.path.basename(f)
             ])
             copyfile(f, target)
-    except:
-        raise errors.BackendBackupError(payload)
+    except Exception as e:
+        raise errors.BackendBackupError(e)
