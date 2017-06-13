@@ -24,8 +24,14 @@ COLLECT_API_LOG = config.COLLECT_API_LOG
 
 API_VERSION = 0
 
-CLIENT_MODEL = 'mark0'
+CLIENT_ID = 0
 CLIENT_VERSION = 0
+CLIENT_MODEL = 'mark0'
+
+CAMERA_MODEL = 'Kuman SC15-JP'
+LED_MODEL = 'cheap'
+SENSOR_TEMPERATURE_MODEL = 'DHT-11'
+SENSOR_HUMIDITY_MODEL = 'DHT-11'
 DHT_PIN = 15
 
 
@@ -46,7 +52,11 @@ def snapshot():
     time.sleep(5)
     camera.capture(path)
     camera.stop_preview()
-    return name, path
+    payload = {
+        'm': CAMERA_MODEL,
+        'v': name,
+    }
+    return payload, path
 
 
 def cmd_leds(turn_red_on = True, turn_blue_on = True):
@@ -68,8 +78,14 @@ def cmd_leds(turn_red_on = True, turn_blue_on = True):
             #    amount_received += len(data)
             # result['red'] = ...
             # result['blue'] = ...
-            result['red'] = turn_red_on
-            result['blue'] = turn_blue_on
+            result['red'] = {
+                'm': LED_MODEL,
+                'v': turn_red_on,
+            }
+            result['blue'] = {
+                'm': LED_MODEL,
+                'v': turn_blue_on,
+            }
         finally:
             sock.close()
         return result
@@ -83,8 +99,14 @@ def sensor_harvest():
     result = instance.read()
     if result.is_valid():
         return {
-            'temperature': result.temperature,
-            'humidity': result.humidity,
+            'temperature': {
+                'm': SENSOR_TEMPERATURE_MODEL,
+                'v': result.temperature,
+            }
+            'humidity': {
+                'm': SENSOR_HUMIDITY_MODEL,
+                'v': result.humidity,
+            }
         }
     else:
         print("Could not read DHT11")
@@ -96,7 +118,11 @@ def backup(img_file):
 
 
 def post(data):
-    data['client'] = { 'm': CLIENT_MODEL, 'v': CLIENT_VERSION }
+    data['client'] = {
+        'v': CLIENT_VERSION,
+        'i': CLIENT_ID,
+        'm': CLIENT_MODEL,
+    }
     data['api'] = API_VERSION
     backend.api.record(data)
 
@@ -116,15 +142,15 @@ def run():
     else:
         turn_on_leds = False
 
-    img_name, full_path = snapshot()
+    camera, full_path = snapshot()
     leds = cmd_leds(turn_blue_on=turn_on_leds, turn_red_on=turn_on_leds)
     sensors = sensor_harvest()
     post({
       'ts': datetime.datetime.now().isoformat(),
-      'snapshot': img_name,
-      'status': {
+      'state': {
         'leds': leds,
         'sensors': sensors,
+        'camera': camera,
       }
     })
     backup(full_path)
