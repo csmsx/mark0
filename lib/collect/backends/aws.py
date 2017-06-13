@@ -55,6 +55,21 @@ def record(payload):
         raise errors.BackendRecordError(e)
 
 
+def backups(files = [], keys = []):
+    try:
+        s3 = boto3.client('s3')
+        for idx, f in enumerate(files):
+            key = keys[idx]
+            with open(f, 'rb') as fh:
+                s3.put_object(Body=fh,
+                              Bucket=BUCKET,
+                              Key=key,
+                              ACL='authenticated-read',
+                              StorageClass='STANDARD')
+    except Exception as e:
+        raise errors.BackendBackupError(e)
+
+
 def __valid_hash(payload):
     # Hash key within 2048 bytes
     '''
@@ -95,10 +110,6 @@ def __escape_forbidden(string):
 
 def __unescape_forbidden(string):
     return string.replace('__SHARP__', RESERVED_CHARACTER)
-
-
-def backups(files = []):
-    pass
 
 
 if __name__ == '__main__':
