@@ -6,6 +6,9 @@ import lib.collect.backends.errors as errors
 import lib.collect.config as config
 
 
+RESERVED_CHARACTER = '#'
+
+
 def setup():
     db = boto3.resource('dynamodb')
     table = db.create_table(
@@ -40,7 +43,57 @@ def setup():
 
 
 def record(payload):
-    pass
+    db = boto3.resource('dynamodb')
+    table = db.Table(config.DYNAMODB_TABLE_NAME)
+    try:
+        hash_key = __valid_hash(payload)
+        data = payload
+        data['deployment_id'] = hash_key
+        table.put_item(Item=data)
+    except Exception as e:
+        raise errors.BackendRecordError(e)
+
+
+def __valid_hash(payload):
+    # Hash key within 2048 bytes
+    '''
+    Valid payload:
+    - Dictionary with minimum entries as follows:
+    - {
+        "api": 0,
+        "client": {
+          "v": 0,
+          "i": "",
+          "m": "",
+        },
+        "state": {},
+        "ts": "",
+      }
+    '''
+    try:
+        api = payload['api']
+        client_version = payload['client']['v']
+        client_id = payload['client']['i']
+        client_model = payload['client']['m']
+        state = payload['state']
+        ts = payload['ts']
+        hash_key = RESERVED_CHARACTER.join([
+            client_id,
+            client_version,
+            client_model,
+            api,
+        ])
+        return hash_key
+    except KeyError as e:
+        raise errors.BackendInvalidPayloadError(e)
+
+
+def __escape_forbidden(string):
+    return string.replace(RESERVED_CHARACTER, '__SHARP__')
+
+
+def __unescape_forbidden(string):
+    return string.replace('__SHARP__', RESERVED_CHARACTER)
 
 
 def backups(files = []):
