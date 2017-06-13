@@ -148,15 +148,18 @@ def run():
         turn_on_leds = False
 
     camera, full_path = snapshot()
-    leds = cmd_leds(turn_blue_on=turn_on_leds, turn_red_on=turn_on_leds)
     sensors = sensor_harvest()
+    leds = cmd_leds(turn_blue_on=turn_on_leds, turn_red_on=turn_on_leds)
+
+    state = {
+        'camera': camera,
+        'leds': leds,
+    }
+    state.update(sensors)
+
     post({
       'ts': datetime.datetime.now().isoformat(),
-      'state': {
-        'leds': leds,
-        'sensors': sensors,
-        'camera': camera,
-      }
+      'state': state
     })
     backup(full_path)
     if os.path.exists(full_path):
