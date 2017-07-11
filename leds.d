@@ -18,8 +18,8 @@ mkpath(LOG_DIR)
 OUT_LOG=os.path.sep.join([LOG_DIR, 'out.log'])
 ERR_LOG=os.path.sep.join([LOG_DIR, 'err.log'])
 
-BLUE_LED_PIN = 18
-RED_LED_PIN = 17
+BLUE_LED_PINS = [ 18, 23 ]
+RED_LED_PINS = [ 17, 22 ]
 
 
 def log(msg):
@@ -54,8 +54,10 @@ def run(leds):
             try:
                 log("leds.d received: %s" % payload)
                 request = json.loads(payload)
-                __apply_led(leds['red'], request['red'])
-                __apply_led(leds['blue'], request['blue'])
+                for rl in leds['red']:
+                    __apply_led(rl, request['red'])
+                for bl in leds['blue']:
+                    __apply_led(bl, request['blue'])
             except ValueError:
                 log("Failed to parse payload: %s" % payload)
         finally:
@@ -77,8 +79,8 @@ with open(OUT_LOG, 'w+') as out_f:
                 if os.path.exists(config.LEDS_D_ADDRESS):
                     raise
             leds = {
-                'red': LED(RED_LED_PIN),
-                'blue': LED(BLUE_LED_PIN),
+                'red': [ LED(rl) for rl in RED_LED_PINS ],
+                'blue': [ LED(bl) for bl in BLUE_LED_PINS ],
             }
             try:
                 run(leds)
