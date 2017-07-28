@@ -1,6 +1,24 @@
 import datetime
 import Adafruit_MCP3008
 
+'''
+Access sensor readings from the MG-811 kind.
+
+The readings are interpreted through an MC3008 ADC chip, reusing code from Adafruit.
+
+The calibration model is very simple at this stage:
+- Aimed at *rough* comparison in spite of estimation.
+- Comparison to common urban air (about 350-400ppm).
+- At best can say that the air has either more or less CO2 than common urban air.
+- Default calibration will not return any reading for the first 60s of operations. During that time, the library "waits" for the MG-811 to heat up and get stable readings.
+
+Although the API mainly gives a labelled comparison (MG811Result.compared_to_air()), the sensor raw reading is also available for custom comparisons (MG811Result.raw()).
+
+References:
+* https://learn.adafruit.com/raspberry-pi-analog-to-digital-converters/mcp3008
+* http://www.adafruit.com/datasheets/MCP3008.pdf
+'''
+
 class MG811Result:
 
     # About 350~400 ppm
