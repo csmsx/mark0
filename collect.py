@@ -15,6 +15,7 @@ from pytz import timezone
 import ntplib
 
 import lib.ext.dht11 as dht11
+import lib.ext.mg811 as mg811
 
 import lib.collect.config as config
 import lib.collect.backend as backend
@@ -30,10 +31,18 @@ CLIENT_MODEL = 'mark0'
 
 CAMERA_MODEL = 'Kuman SC15-JP'
 LED_MODEL = 'cheap'
+
 SENSOR_TEMPERATURE_MODEL = 'DHT-11'
 SENSOR_HUMIDITY_MODEL = 'DHT-11'
 DHT_PIN = 15
 
+SENSOR_CO2_MODEL = 'MG-811'
+MG811_PIN = 8
+
+SENSORS = [
+    SENSOR_TEMPERATURE_MODEL, # covers humidity too
+    SENSOR_CO2_MODEL,
+]
 
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BCM)
@@ -102,7 +111,25 @@ def cmd_leds(turn_red_on = True, turn_blue_on = True):
 
 
 def sensor_harvest():
-    # For now, just DHT11
+    readings = {}
+    for sensor in SENSORS:
+        readings.update(eval("harvest_" + sensor + "()"))
+    return readings
+
+
+def harvest_mg811():
+    instance = mg811.MG811(MG811_PIN)
+    result = instance.read()
+    return {
+        'co2': {
+            'm': SENSOR_CO2_MODEL,
+            'u': 'relative',
+            'v': result.raw(),
+        }
+    }
+
+
+def harvest_dht11():
     instance = dht11.DHT11(pin=DHT_PIN)
     result = instance.read()
     if result.is_valid():
