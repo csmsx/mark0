@@ -1,6 +1,3 @@
-import datetime
-import Adafruit_MCP3008
-
 '''
 Access sensor readings from the MG-811 kind.
 
@@ -18,6 +15,9 @@ References:
 * https://learn.adafruit.com/raspberry-pi-analog-to-digital-converters/mcp3008
 * http://www.adafruit.com/datasheets/MCP3008.pdf
 '''
+
+import datetime
+import Adafruit_MCP3008
 
 class MG811Result:
 
