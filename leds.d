@@ -7,7 +7,8 @@ import sys
 import os
 
 import daemon
-from gpiozero import LED
+from gpiozero import LED, DigitalOutputDevice
+import RPi.GPIO as GPIO
 
 import lib.collect.config as config
 
@@ -21,17 +22,19 @@ ERR_LOG=os.path.sep.join([LOG_DIR, 'err.log'])
 BLUE_LED_PINS = [ 18, 23 ]
 RED_LED_PINS = [ 17, 22 ]
 
+FAN_PINS = [ 21 ]
+
 
 def log(msg):
     sys.stdout.write(msg + '\n')
     sys.stdout.flush()
 
 
-def __apply_led(led, turn_on):
+def __apply(obj, turn_on):
     if turn_on:
-        led.on()
+        obj.on()
     else:
-        led.off()
+        obj.off()
 
 
 def run(leds):
@@ -55,9 +58,11 @@ def run(leds):
                 log("leds.d received: %s" % payload)
                 request = json.loads(payload)
                 for rl in leds['red']:
-                    __apply_led(rl, request['red'])
+                    __apply(rl, request['red'])
                 for bl in leds['blue']:
-                    __apply_led(bl, request['blue'])
+                    __apply(bl, request['blue'])
+                for f in fans:
+                    __apply(f, request['fan'])
             except ValueError:
                 log("Failed to parse payload: %s" % payload)
         finally:
@@ -81,6 +86,7 @@ with open(OUT_LOG, 'w+') as out_f:
             leds = {
                 'red': [ LED(rl) for rl in RED_LED_PINS ],
                 'blue': [ LED(bl) for bl in BLUE_LED_PINS ],
+                'fan': [ DigitalOutputDevice(f) for f in FAN_PINS ],
             }
             try:
                 run(leds)

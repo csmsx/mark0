@@ -31,6 +31,7 @@ CLIENT_MODEL = 'mark0'
 
 CAMERA_MODEL = 'Kuman SC15-JP'
 LED_MODEL = 'cheap'
+FAN_MODEL = 'cheap'
 
 SENSOR_TEMPERATURE_MODEL = 'DHT-11'
 SENSOR_HUMIDITY_MODEL = 'DHT-11'
@@ -74,14 +75,18 @@ def snapshot():
     return payload, path
 
 
-def cmd_leds(turn_red_on = True, turn_blue_on = True):
+def cmd(turn_red_on = True, turn_blue_on = True, turn_fan_on = True):
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     server_address = config.LEDS_D_ADDRESS
     result = {}
     try:
         sock.connect(server_address)
         try:
-            message = json.dumps({ 'red': turn_red_on, 'blue': turn_blue_on })
+            message = json.dumps({
+                'red': turn_red_on,
+                'blue': turn_blue_on,
+                'fan': turn_fan_on,
+            })
             print("Send to socket: %s" % message)
             sock.sendall(message)
 
@@ -93,15 +98,21 @@ def cmd_leds(turn_red_on = True, turn_blue_on = True):
             #    amount_received += len(data)
             # result['red'] = ...
             # result['blue'] = ...
-            result['red'] = {
+            result['leds'] = {}
+            result['leds']['red'] = {
                 'm': LED_MODEL,
                 'u': 'bool',
                 'v': turn_red_on,
             }
-            result['blue'] = {
+            result['leds']['blue'] = {
                 'm': LED_MODEL,
                 'u': 'bool',
                 'v': turn_blue_on,
+            }
+            result['fan'] = {
+                'm': FAN_MODEL,
+                'u': 'bool',
+                'v': turn_fan_on,
             }
         finally:
             sock.close()
@@ -181,11 +192,23 @@ def run():
 
     camera, full_path = snapshot()
     sensors = sensor_harvest()
-    leds = cmd_leds(turn_blue_on=turn_on_leds, turn_red_on=turn_on_leds)
+
+    #if sensors['co2']['v'] > 0 and mg811.MG811Result(sensors['co2']['v']).compared_to_air() == 'low':
+    #    turn_fan_on=True
+    #else:
+    #    turn_fan_on=False
+    turn_fan_on=True
+
+    cmd_results = cmd(
+        turn_blue_on=turn_on_leds,
+        turn_red_on=turn_on_leds,
+        turn_fan_on=turn_fan_on
+    )
 
     state = {
         'camera': camera,
-        'leds': leds,
+        'leds': cmd_results['leds'],
+        'fan': cmd_results['fan'],
     }
     state.update(sensors)
 
