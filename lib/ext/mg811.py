@@ -65,10 +65,10 @@ class MG811:
         self.__chipselect_shutdown = ch_sh
         self.__clk = clk
         self.__adc = Adafruit_MCP3008.MCP3008(
-            clk=__clk,
-            cs=__chipselect_shutdown,
-            miso=__dout_miso,
-            mosi=__din_mosi
+            clk=clk,
+            cs=ch_sh,
+            miso=dout,
+            mosi=din
         )
         self.__in_analog_ch = in_analog_ch
         self.__start_time = datetime.datetime.now()
@@ -82,6 +82,6 @@ class MG811:
         '''
         now = datetime.datetime.now()
         if now - self.__start_time > self.__calibration_time:
-            return self.__adc.read_adc(self.__in_analog_ch)
+            return MG811Result(self.__adc.read_adc(self.__in_analog_ch))
         else:
-            return -1
+            return MG811Result(-1)

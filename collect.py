@@ -40,8 +40,8 @@ SENSOR_CO2_MODEL = 'MG-811'
 MG811_PIN = 8
 
 SENSORS = [
-    SENSOR_TEMPERATURE_MODEL, # covers humidity too
-    SENSOR_CO2_MODEL,
+    'dht11',
+    'mg811',
 ]
 
 GPIO.setwarnings(False)
@@ -174,7 +174,7 @@ def run():
         local_time = datetime.datetime.now()
     night_start = datetime.time(21)
     night_end = datetime.time(4)
-    if local_time > night_start or local_time < night_end:
+    if local_time.time() > night_start or local_time.time() < night_end:
         turn_on_leds = True
     else:
         turn_on_leds = False
