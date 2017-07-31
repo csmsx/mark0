@@ -11,8 +11,8 @@ import uuid
 
 import RPi.GPIO as GPIO
 from picamera import PiCamera
-import pytz
 from pytz import timezone
+import ntplib
 
 import lib.ext.dht11 as dht11
 
@@ -138,13 +138,13 @@ def post(data):
 
 
 def run():
-    # 1) Take snapshot
-    # 2) Send snapshot to Cx Images, unique name
-    # 3) Send status data to Cx API.
-
-    # Decide
-    z = timezone('Asia/Tokyo')
-    local_time = datetime.datetime.now(z).time()
+    # Get local time
+    try:
+        time_client = ntplib.NTPClient()
+        response = time_client.request('pool.ntp.org')
+        local_time = datetime.datetime.fromtimestamp(response.tx_time)
+    except:
+        local_time = datetime.datetime.now()
     night_start = datetime.time(21)
     night_end = datetime.time(4)
     if local_time > night_start or local_time < night_end:
@@ -163,7 +163,7 @@ def run():
     state.update(sensors)
 
     post({
-      'ts': datetime.datetime.now().isoformat(),
+      'ts': datetime.datetime.utcnow().isoformat(),
       'state': state
     })
     backup(full_path, camera['v'])
