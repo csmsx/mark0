@@ -75,7 +75,7 @@ def snapshot():
     return payload, path
 
 
-def cmd(turn_red_on = True, turn_blue_on = True, turn_fan_on = True):
+def cmd(turn_red_on = True, turn_blue_on = True):
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     server_address = config.LEDS_D_ADDRESS
     result = {}
@@ -83,9 +83,8 @@ def cmd(turn_red_on = True, turn_blue_on = True, turn_fan_on = True):
         sock.connect(server_address)
         try:
             message = json.dumps({
-                'red': turn_red_on,
-                'blue': turn_blue_on,
-                'fan': turn_fan_on,
+                'reds': turn_red_on,
+                'blues': turn_blue_on,
             })
             print("Send to socket: %s" % message)
             sock.sendall(message)
@@ -109,11 +108,11 @@ def cmd(turn_red_on = True, turn_blue_on = True, turn_fan_on = True):
                 'u': 'bool',
                 'v': turn_blue_on,
             }
-            result['fan'] = {
-                'm': FAN_MODEL,
-                'u': 'bool',
-                'v': turn_fan_on,
-            }
+            #result['fan'] = {
+            #    'm': FAN_MODEL,
+            #    'u': 'bool',
+            #    'v': turn_fan_on,
+            #}
         finally:
             sock.close()
         return result
@@ -197,18 +196,15 @@ def run():
     #    turn_fan_on=True
     #else:
     #    turn_fan_on=False
-    turn_fan_on=True
 
     cmd_results = cmd(
         turn_blue_on=turn_on_leds,
-        turn_red_on=turn_on_leds,
-        turn_fan_on=turn_fan_on
+        turn_red_on=turn_on_leds
     )
 
     state = {
         'camera': camera,
         'leds': cmd_results['leds'],
-        'fan': cmd_results['fan'],
     }
     state.update(sensors)
 
