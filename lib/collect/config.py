@@ -1,17 +1,17 @@
 from distutils.dir_util import mkpath
-import os
+from os import path
 
-WORK_DIR = os.path.expanduser('~/mark0/data')
+WORK_DIR = path.expanduser('~/mark0/data')
 mkpath(WORK_DIR)
 
-BACKUP_DIR =  os.path.sep.join([WORK_DIR, 'backups'])
+BACKUP_DIR = path.sep.join([WORK_DIR, 'backups'])
 mkpath(BACKUP_DIR)
 
-COLLECT_API_LOG = os.path.sep.join([WORK_DIR, 'collect_api_log.json'])
+COLLECT_API_LOG = path.sep.join([WORK_DIR, 'collect_api_log.json'])
 
-LEDS_D_RUN_DIR = '/var/log/mark0/leds.d'
-mkpath(LEDS_D_RUN_DIR)
-LEDS_D_ADDRESS = os.path.sep.join([LEDS_D_RUN_DIR, 'leds_d_socket'])
+DEVICES_D_RUN_DIR = "/var/log/mark0/devices.d"
+mkpath(DEVICES_D_RUN_DIR)
+DEVICES_D_ADDRESS = path.sep.join([DEVICES_D_RUN_DIR, "devices_d_socket"])
 
 BACKEND = 'aws'
 
