@@ -208,13 +208,11 @@ def run():
     }
     state.update(sensors)
 
-    import pprint
-    pprint.pprint(state)
-    #post({
-    #  'ts': datetime.datetime.utcnow().isoformat(),
-    #  'state': state
-    #})
-    #backup(full_path, camera['v'])
+    post({
+      'ts': datetime.datetime.utcnow().isoformat(),
+      'state': state
+    })
+    backup(full_path, camera['v'])
     if os.path.exists(full_path):
         os.remove(full_path)
 
