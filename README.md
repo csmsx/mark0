@@ -33,6 +33,21 @@ The following procedure is based on `cron` to run every hour. All programs run a
 In the `crontab`, please edit the path to the `collect.py` script.
 
 
+Troubleshooting
+---------------
+
+## Suspension in syslog
+
+If you see many "suspensions" in `/var/log/syslog`, exactly at the time you expect `collect.py` execution by `cron`, you are probably hitting an old `rsyslog` bug (circa 2015-2016). The fix exists for long, but it is not applied up to and including Raspbian Jessie. The workaround is to remove a pipe to `/dev/console` in `/etc/rsyslog.conf`.
+
+Typical `syslog` symptom:
+
+    Aug  2 23:16:25 raspberrypi rsyslogd-2007: action 'action 17' suspended, next retry is Wed Aug  2 23:17:55 2017 [try http://www.rsyslog.com/e/2007 ]
+
+References:
+* Rsyslog [bug discussion on Github](https://github.com/rsyslog/rsyslog/issues/35).
+* Debian fix [commit message](https://anonscm.debian.org/cgit/collab-maint/rsyslog.git/commit/?id=67bc8e5326b0d3564c7e2153dede25f9690e6839). Note this is not included in Raspbian Jessie.
+
 Copyrights & Thanks
 -------------------
 
