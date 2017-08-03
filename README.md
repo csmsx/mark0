@@ -38,7 +38,7 @@ Troubleshooting
 
 ## Suspension in syslog
 
-If you see many "suspensions" in `/var/log/syslog`, exactly at the time you expect `collect.py` execution by `cron`, you are probably hitting an old `rsyslog` bug (circa 2015-2016). The fix exists for long, but it is not applied up to and including Raspbian Jessie. The workaround is to remove a pipe to `/dev/console` in `/etc/rsyslog.conf`.
+If you see many "suspensions" in `/var/log/syslog`, exactly at the time you expect `collect.py` execution by `cron`, you are probably hitting an old `rsyslog` bug (circa 2015-2016). The fix exists for long, but it is not applied up to and including Raspbian Jessie. The workaround is to remove the command that pipes to `/dev/console` in `/etc/rsyslog.conf` (usually at the bottom of a default configuration).
 
 Typical `syslog` symptom:
 
