@@ -11,24 +11,39 @@ import uuid
 
 import RPi.GPIO as GPIO
 from picamera import PiCamera
-import pytz
 from pytz import timezone
+import ntplib
 
 import lib.ext.dht11 as dht11
+import lib.ext.mg811 as mg811
 
 import lib.collect.config as config
+import lib.collect.backend as backend
 
-WORK_DIR = os.path.expanduser('~/mark0/data')
-mkpath(WORK_DIR)
-
-COLLECT_API_LOG = os.path.sep.join([WORK_DIR, 'collect_api_log.json'])
+WORK_DIR = config.WORK_DIR
+COLLECT_API_LOG = config.COLLECT_API_LOG
 
 API_VERSION = 0
 
-CLIENT_MODEL = 'mark0'
+CLIENT_ID = 0
 CLIENT_VERSION = 0
+CLIENT_MODEL = 'mark0'
+
+CAMERA_MODEL = 'Kuman SC15-JP'
+LED_MODEL = 'cheap'
+FAN_MODEL = 'cheap'
+
+SENSOR_TEMPERATURE_MODEL = 'DHT-11'
+SENSOR_HUMIDITY_MODEL = 'DHT-11'
 DHT_PIN = 15
 
+SENSOR_CO2_MODEL = 'MG-811'
+MG811_PIN = 8
+
+SENSORS = [
+    'dht11',
+    'mg811',
+]
 
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BCM)
@@ -47,17 +62,30 @@ def snapshot():
     time.sleep(5)
     camera.capture(path)
     camera.stop_preview()
-    return name, path
+    payload = {
+        'm': CAMERA_MODEL,
+        'u': 'jpg',
+        'v': os.path.sep.join([
+                        str(CLIENT_ID),
+                        str(CLIENT_MODEL),
+                        str(CLIENT_VERSION),
+                        name,
+                     ]),
+    }
+    return payload, path
 
 
-def cmd_leds(turn_red_on = True, turn_blue_on = True):
+def cmd(turn_red_on = True, turn_blue_on = True):
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    server_address = config.LEDS_D_ADDRESS
+    server_address = config.DEVICES_D_ADDRESS
     result = {}
     try:
         sock.connect(server_address)
         try:
-            message = json.dumps({ 'red': turn_red_on, 'blue': turn_blue_on })
+            message = json.dumps({
+                'reds': turn_red_on,
+                'blues': turn_blue_on,
+            })
             print("Send to socket: %s" % message)
             sock.sendall(message)
 
@@ -69,8 +97,22 @@ def cmd_leds(turn_red_on = True, turn_blue_on = True):
             #    amount_received += len(data)
             # result['red'] = ...
             # result['blue'] = ...
-            result['red'] = turn_red_on
-            result['blue'] = turn_blue_on
+            result['leds'] = {}
+            result['leds']['red'] = {
+                'm': LED_MODEL,
+                'u': 'bool',
+                'v': turn_red_on,
+            }
+            result['leds']['blue'] = {
+                'm': LED_MODEL,
+                'u': 'bool',
+                'v': turn_blue_on,
+            }
+            #result['fan'] = {
+            #    'm': FAN_MODEL,
+            #    'u': 'bool',
+            #    'v': turn_fan_on,
+            #}
         finally:
             sock.close()
         return result
@@ -79,75 +121,100 @@ def cmd_leds(turn_red_on = True, turn_blue_on = True):
 
 
 def sensor_harvest():
-    # For now, just DHT11
+    readings = {}
+    for sensor in SENSORS:
+        readings.update(eval("harvest_" + sensor + "()"))
+    return readings
+
+
+def harvest_mg811():
+    instance = mg811.MG811(MG811_PIN, in_analog_ch=1)
+    result = instance.read()
+    return {
+        'co2': {
+            'm': SENSOR_CO2_MODEL,
+            'u': 'relative',
+            'v': result.raw(),
+        }
+    }
+
+
+def harvest_dht11():
     instance = dht11.DHT11(pin=DHT_PIN)
     result = instance.read()
     if result.is_valid():
         return {
-            'temperature': result.temperature,
-            'humidity': result.humidity,
+            'temperature': {
+                'm': SENSOR_TEMPERATURE_MODEL,
+                'u': 'celsius',
+                'v': result.temperature,
+            },
+            'humidity': {
+                'm': SENSOR_HUMIDITY_MODEL,
+                'u': 'percent',
+                'v': result.humidity,
+            }
         }
     else:
         print("Could not read DHT11")
         return {}
 
 
-def backup(img_file):
-    pass
+def backup(img_file, key):
+    backend.api.backups([img_file], [key])
 
 
 def post(data):
-    data['client'] = { 'm': CLIENT_MODEL, 'v': CLIENT_VERSION }
+    data['client'] = {
+        'v': CLIENT_VERSION,
+        'i': CLIENT_ID,
+        'm': CLIENT_MODEL,
+    }
     data['api'] = API_VERSION
-
-    original = []
-
-    # TODO Temporary time to get the server up.
-    if os.path.exists(COLLECT_API_LOG):
-        with open(COLLECT_API_LOG, 'r') as f:
-            payload = f.read()
-            try:
-                original = json.loads(payload)
-            except ValueError:
-                print("Could not parse %s, overwriting." % COLLECT_API_LOG)
-                original = []
-
-    original.append(data)
-    to_save = json.dumps(original)
-    with open(COLLECT_API_LOG, 'w') as f:
-        f.write(to_save)
-
-    # TODO
+    backend.api.record(data)
 
 
 def run():
-    # 1) Take snapshot
-    # 2) Send snapshot to Cx Images, unique name
-    # 3) Send status data to Cx API.
-
-    # Decide
-    z = timezone('Asia/Tokyo')
-    local_time = datetime.datetime.now(z).time()
+    # Get local time
+    try:
+        time_client = ntplib.NTPClient()
+        response = time_client.request('pool.ntp.org')
+        local_time = datetime.datetime.fromtimestamp(response.tx_time)
+    except:
+        local_time = datetime.datetime.now()
     night_start = datetime.time(21)
     night_end = datetime.time(4)
-    if local_time > night_start or local_time < night_end:
+    if local_time.time() > night_start or local_time.time() < night_end:
         turn_on_leds = True
     else:
         turn_on_leds = False
 
-    img_name, full_path = snapshot()
-    leds = cmd_leds(turn_blue_on=turn_on_leds, turn_red_on=turn_on_leds)
+    camera, full_path = snapshot()
     sensors = sensor_harvest()
+
+    #if sensors['co2']['v'] > 0 and mg811.MG811Result(sensors['co2']['v']).compared_to_air() == 'low':
+    #    turn_fan_on=True
+    #else:
+    #    turn_fan_on=False
+
+    cmd_results = cmd(
+        turn_blue_on=turn_on_leds,
+        turn_red_on=turn_on_leds
+    )
+
+    state = {
+        'camera': camera,
+        'leds': cmd_results['leds'],
+    }
+    state.update(sensors)
+
     post({
-      'ts': datetime.datetime.now().isoformat(),
-      'snapshot': img_name,
-      'status': {
-        'leds': leds,
-        'sensors': sensors,
-      }
+      'ts': datetime.datetime.utcnow().isoformat(),
+      'state': state
     })
-    #if os.path.exists(full_path):
-    #    os.remove(full_path)
+    backup(full_path, camera['v'])
+    if os.path.exists(full_path):
+        os.remove(full_path)
 
 
 if __name__ == '__main__':
