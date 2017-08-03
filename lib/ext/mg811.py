@@ -81,7 +81,8 @@ class MG811:
         method returns -1.
         '''
         now = datetime.datetime.now()
-        if now - self.__start_time > self.__calibration_time:
-            return MG811Result(self.__adc.read_adc(self.__in_analog_ch))
-        else:
-            return MG811Result(-1)
+        #if now - self.__start_time > self.__calibration_time:
+        #    return MG811Result(self.__adc.read_adc(self.__in_analog_ch))
+        #else:
+        #    return MG811Result(-1)
+        return MG811Result(self.__adc.read_adc(self.__in_analog_ch))

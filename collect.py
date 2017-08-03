@@ -128,7 +128,7 @@ def sensor_harvest():
 
 
 def harvest_mg811():
-    instance = mg811.MG811(MG811_PIN)
+    instance = mg811.MG811(MG811_PIN, in_analog_ch=1)
     result = instance.read()
     return {
         'co2': {
