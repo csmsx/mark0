@@ -48,6 +48,18 @@ References:
 * Rsyslog [bug discussion on Github](https://github.com/rsyslog/rsyslog/issues/35).
 * Debian fix [commit message](https://anonscm.debian.org/cgit/collab-maint/rsyslog.git/commit/?id=67bc8e5326b0d3564c7e2153dede25f9690e6839). Note this is not included in Raspbian Jessie.
 
+## Dropped output from cron
+
+You may see dropped output in `cron`:
+
+    CRON[8380]: (CRON) info (No MTA installed, discarding output)
+
+This is NOT a problem, however a missed opportunity. It means `cron` has detected the command writes to `stdout`. `cron` expects then a redirection to a file, a mail reader, a mail server, etc.
+
+The output from `collect.py` contains the sensor readings. If you want to have both an "heartbeat" email and an idea of the sensor values, you can install `postfix` and set `MAILTO=` to the target email address in your `crontab`.
+
+Alternatively you can just drop the output explicitly by redirecting to `/dev/null`, or redirect to any file (e.g. in `/var/log`).
+
 Copyrights & Thanks
 -------------------
 
